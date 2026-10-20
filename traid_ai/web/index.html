@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Traid AI — управление Paper-сессиями</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%237ce3c1'/%3E%3Cpath d='M8 26L17 16L23 21L32 10' fill='none' stroke='%23112224' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/health.css"><script defer src="/chart.js"></script><script defer src="/app.js"></script><script defer src="/alpaca.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Главная Traid AI"><span class="logo">↗</span><strong>traid<span>ai</span></strong><span class="workspace">Рабочая панель</span></a>
+  <div class="top-status"><span class="pill">Виртуальные средства</span><span id="connection" class="connection">Подключение…</span></div>
+</header>
+<main>
+  <div class="page-title"><div><span class="eyebrow">ТОРГОВАЯ ЛАБОРАТОРИЯ</span><h1>Всё под контролем.</h1><p>Настрой сессию и наблюдай за каждым решением.</p></div><button id="export" class="button secondary" disabled>↓ Скачать отчёт</button></div>
+  <div id="alert" class="alert" role="alert" hidden></div>
+  <nav class="mobile-nav" aria-label="Разделы панели"><a href="#settings">Настройки и запуск</a><a href="#overview">Наблюдение ↓</a></nav>
+  <nav class="workspace-nav" aria-label="Быстрый переход"><a href="#session-section">Сессия</a><a href="#chart-section">График</a><a href="#log-section">Журнал</a><a href="#history-section">История</a></nav>
+  <section id="alpaca-panel" class="panel alpaca-panel">
+    <div class="section-heading"><div><span class="eyebrow">ВНЕШНЯЯ ПЕСОЧНИЦА</span><h2>Alpaca <span class="muted">Paper Only</span></h2></div><span id="alpaca-status" class="tag">Не подключена</span></div>
+    <p class="field-help">Баланс, позиции и заявки виртуального счёта Alpaca. Режим «Alpaca · виртуальные ордера» исполняет сделки на этом Paper-счёте. Демо и локальный симулятор ведут отдельные портфели.</p>
+    <form id="alpaca-connect" class="alpaca-connect">
+      <div><label for="alpaca-key">Paper Key ID</label><input id="alpaca-key" name="key" type="password" autocomplete="off" spellcheck="false" maxlength="256" required></div>
+      <div><label for="alpaca-secret">Paper Secret Key</label><input id="alpaca-secret" name="secret" type="password" autocomplete="off" spellcheck="false" maxlength="256" required></div>
+      <button id="alpaca-connect-button" type="submit" class="button primary">Подключить Paper</button>
+      <button id="alpaca-env" type="button" class="button secondary" hidden>Ключи из окружения</button>
+    </form>
+    <p id="alpaca-help" class="field-help">Ключи остаются в памяти локального сервера до отключения или перезапуска. Торговый аккаунт не создаётся; доступность Paper Only по возрасту пока не подтверждена.</p>
+    <p id="alpaca-error" class="field-help negative" role="alert" hidden></p>
+    <div id="alpaca-account" hidden>
+      <div class="alpaca-balances"><div><span>Стоимость Paper-портфеля</span><strong id="alpaca-equity">—</strong></div><div><span>Свободные USD</span><strong id="alpaca-cash">—</strong></div><div><span>Доступно для крипты</span><strong id="alpaca-power">—</strong></div><div><span>BTC/USD · bid / ask</span><strong id="alpaca-quote">—</strong></div></div>
+      <div class="section-heading"><p id="alpaca-updated" class="field-help"></p><button id="alpaca-disconnect" type="button" class="button secondary">Отключить</button></div>
+      <details open><summary>Позиции внешнего Paper-счёта</summary><div class="table-scroll"><table><thead><tr><th>Актив</th><th>Количество</th><th>Цена входа</th><th>Стоимость</th><th>Результат</th></tr></thead><tbody id="alpaca-positions"></tbody></table></div></details>
+      <details><summary>Последние 50 заявок внешнего Paper-счёта</summary><div class="table-scroll"><table><thead><tr><th>Время</th><th>Актив / сторона</th><th>Заявлено</th><th>Исполнено</th><th>Статус</th></tr></thead><tbody id="alpaca-orders"></tbody></table></div></details>
+      <p class="field-help">Отключение прекращает наблюдение. Заявки и позиции на стороне Alpaca остаются на счёте. Для управления сделками выбери режим Alpaca в настройках сессии. Ключи недоступны модулю решений.</p>
+    </div>
+  </section>
+  <div class="layout">
+    <aside>
+      <section class="panel setup"><div class="section-heading"><h2>Новая сессия</h2><span class="small-badge">PAPER</span></div>
+        <form id="settings">
+          <label for="mode">Источник данных</label>
+          <select id="mode" name="mode"><option value="demo">Демо · искусственные цены</option><option value="paper" selected>Рынок · локальный симулятор</option><option value="alpaca" disabled>Alpaca · виртуальные ордера</option></select>
+          <label for="strategy">Решение о входе</label><select id="strategy" name="strategy"><option value="qwen" selected>Qwen · главный ИИ</option><option value="momentum">Тестовое правило по движению цены</option><option value="smoke" disabled>Проверка исполнения · один вход и выход</option></select>
+          <p id="mode-help" class="field-help">Ускоренная демонстрация. Не бэктест и не оценка доходности.</p>
+          <label for="capital">Виртуальный бюджет <span>USD</span></label><input id="capital" name="capital" type="number" min="5" max="1000000000" step="1" value="1000" required>
+          <label for="target">Желаемый результат к завершению <span>%</span></label><input id="target" name="target_percent" type="number" min="0" step="0.01" placeholder="Не задана">
+          <p class="field-help">Цель относительно стартового бюджета после расходов. Это ориентир для ИИ; лимиты риска и время сессии сохраняются.</p>
+          <label for="trail">Расстояние скользящего стопа <span>%</span></label><input id="trail" name="stop_percent" type="number" min="0.01" max="99.99" step="0.01" value="2" required>
+          <p class="field-help">Стоп следует вверх за максимумом цены после входа. При откате до стопа код предлагает выход. Сервер должен оставаться включён.</p>
+          <label for="duration">Длительность сессии <span>минут</span></label><input id="duration" name="duration_minutes" type="number" min="2" max="1440" step="1" value="60" required>
+          <label for="max-hold">Максимум удержания позиции <span>минут</span></label><input id="max-hold" name="max_hold_minutes" type="number" min="1" step="1" placeholder="Без отдельного ограничения">
+          <p class="field-help">Пустое поле отключает выход по сроку удержания. Скользящий стоп, лимиты риска и общий дедлайн сессии действуют всегда.</p>
+          <div class="field-row"><div><label for="risk">Риск на сделку <span>%</span></label><input id="risk" name="risk_percent" type="number" min="0.01" max="100" step="0.01" value="0.5" required></div><div><label for="loss">Лимит потери <span>%</span></label><input id="loss" name="loss_limit_percent" type="number" min="0.01" max="100" step="0.01" value="3" required></div></div>
+          <label for="exposure">Максимальная экспозиция <span>%</span></label><input id="exposure" name="exposure_percent" type="number" min="0.01" max="100" step="0.01" value="25" required>
+          <details><summary>Расходы модели</summary><div class="field-row"><div><label for="fee">Комиссия <span>%</span></label><input id="fee" name="fee_percent" type="number" min="0" max="99" step="0.01" value="0.1" required></div><div><label for="slippage">Проскальзывание <span>bps</span></label><input id="slippage" name="slippage_bps" type="number" min="0" max="9999" step="1" value="5" required></div></div></details>
+          <button id="start" class="button primary" type="submit">▶ Запустить сессию</button>
+          <p class="fineprint">Параметры фиксируются на старте. Новая сессия доступна после завершения текущей.</p>
+        </form>
+      </section>
+      <section class="panel history" id="history-section">
+        <div class="section-heading"><h2>История сессий</h2><span id="session-count" class="count">0</span></div>
+        <label class="sr-only" for="session-search">Поиск сессий по дате, источнику или ID</label><input id="session-search" type="search" placeholder="Поиск по дате, источнику, ID" autocomplete="off">
+        <label class="sr-only" for="session-filter">Статус сессий</label><select id="session-filter"><option value="all">Все сессии</option><option value="open">Незавершённые</option><option value="closed">Завершённые</option></select>
+        <label class="sr-only" for="sessions">Выберите сессию</label><select id="sessions"><option value="">Пока нет сессий</option></select>
+        <p id="session-id" class="mono tiny">—</p><p id="session-search-note" class="field-help" aria-live="polite"></p>
+        <div class="history-actions"><button id="copy-session" type="button" class="button secondary" disabled>Копировать ID</button><button id="active-session" type="button" class="button secondary" disabled>К текущей</button></div>
+        <button id="restore" class="button secondary" disabled>Восстановить сессию</button>
+        <button id="delete-session" type="button" class="button danger" disabled>Удалить историю сессии</button>
+        <p id="delete-help" class="field-help">Удаление доступно для завершённой сессии после остановки исполнения и проверок. Сначала можно скачать отчёт.</p>
+        <p class="field-help">История остаётся после перезапуска. Закрытая вкладка не останавливает сервер.</p>
+      </section>
+      <section class="panel setup" id="model-panel"><div class="section-heading"><h2>Главный ИИ</h2><span id="model-tag" class="tag">Qwen 4B / 9B</span></div><label for="llm-model">Модель для новой сессии</label><select id="llm-model" name="llm_model" form="settings"><option value="qwen3.5:4b">Qwen 3.5 4B</option><option value="qwen3.5:9b">Qwen 3.5 9B</option></select><p id="model-status" class="field-help">Проверяем состояние…</p><button id="model-connect" type="button" class="button secondary">Подключить Qwen</button><p class="field-help">Выбери модель и подключи её перед запуском. Модель фиксируется на всю сессию. Локально через Ollama; риск, скользящий стоп и дедлайн контролирует код.</p></section>
+    </aside>
+    <div class="content" id="overview">
+      <section class="panel" id="ai-panel"><div class="section-heading"><h2>Решение главного ИИ</h2><span id="ai-status" class="tag">Нет решения</span></div><p id="ai-reason" class="field-help">Здесь появятся действие и причина Qwen.</p><p id="ai-details" class="tiny muted"></p><p id="ai-evidence" class="field-help"></p><p id="ai-context" class="field-help"></p></section>
+      <section id="objective-panel" class="panel position-panel" hidden><div class="section-heading"><h2>Цель сессии</h2><span id="objective-status" class="tag">Ориентир</span></div><dl><div><dt>Желаемый результат</dt><dd id="objective-target">—</dd></div><div><dt>Результат с учётом закрытия</dt><dd id="objective-current">—</dd></div><div><dt>Осталось до цели</dt><dd id="objective-remaining">—</dd></div></dl><progress id="objective-progress" max="100" value="0" aria-label="Прогресс к желаемому результату"></progress><p class="field-help">Промежуточная оценка включает расходы на закрытие по последней котировке. Недостижение цели допустимо; риск и дедлайн фиксированы. Цель не вызывает сделки или автоматическое завершение.</p></section>
+      <section class="panel" id="technical-health"><div class="section-heading"><h2>Состояние системы</h2><span id="health-status" class="tag">Остановлен</span></div><p id="health-details" class="field-help"></p><div id="health-components" class="health-grid"></div><p id="health-blockers" class="field-help"></p><p id="health-decision" class="field-help"></p><div id="decision-summary" hidden><h3>Почему нет входов</h3><p id="decision-summary-counts" class="field-help"></p><div id="decision-summary-blocks"></div><p id="decision-summary-note" class="field-help"></p></div><details><summary>Решение → риск → исполнение</summary><div class="table-scroll"><table><thead><tr><th>Время</th><th>Решение</th><th>Проверка риска</th><th>Исполнение</th></tr></thead><tbody id="decision-flow"></tbody></table></div></details></section>
+      <section class="panel"><div class="section-heading"><h2>Сравнение и учёт</h2><button id="compare" class="button secondary" disabled>Сравнить с USD и правилом</button></div><p id="comparison-note" class="field-help">После закрытия можно воспроизвести сессию в локальном симуляторе.</p><div class="table-scroll"><table><thead><tr><th>Вариант</th><th>Результат</th><th>Расходы</th><th>Просадка</th></tr></thead><tbody id="comparison-results"></tbody></table></div><p id="accounting-note" class="field-help"></p><button id="reconcile-fees" class="button secondary" disabled>Сверить начисления Alpaca</button></section>
+      <section class="panel session-bar" id="session-section"><div><div class="session-label"><span id="status-dot" class="status-dot"></span><strong id="status">Готов к запуску</strong><span id="source" class="tag">Нет активной сессии</span></div><p id="session-note">Начни с демо, чтобы увидеть работу симулятора.</p></div><div class="controls"><button id="pause" class="button secondary" disabled>Пауза входов</button><button id="stop" class="button danger" disabled>Завершить</button></div></section>
+      <section class="metrics" aria-label="Показатели сессии">
+        <article class="metric"><span>Стоимость портфеля</span><strong id="equity">—</strong><small id="cash">Свободные средства: —</small></article>
+        <article class="metric"><span>Результат сессии</span><strong id="pnl">—</strong><small id="pnl-percent">После расходов исполнения</small></article>
+        <article class="metric"><span>До завершения</span><strong id="countdown">—</strong><small id="clock-label">Время сессии</small><progress id="progress" max="100" value="0" aria-label="Прогресс сессии"></progress></article>
+        <article class="metric"><span id="fee-label">Комиссии</span><strong id="fees">—</strong><small id="drawdown">Макс. просадка: —</small></article>
+      </section>
+      <section class="panel chart-panel" id="chart-section">
+        <div class="chart-heading"><div><span class="eyebrow">РЫНОК</span><h2>Bitcoin <span class="muted">/ USD</span></h2></div><div class="quote-value"><strong id="price">—</strong><small id="quote-time">Котировок пока нет</small></div></div>
+        <div class="chart-toolbar" role="group" aria-label="Управление графиком">
+          <div class="chart-ranges"><button type="button" class="button secondary" data-chart-range="300000">5 мин</button><button type="button" class="button secondary" data-chart-range="900000">15 мин</button><button type="button" class="button secondary" data-chart-range="3600000">1 час</button><button type="button" class="button secondary" data-chart-range="all" aria-pressed="true">Всё</button></div>
+          <div class="chart-actions"><button id="chart-zoom-out" type="button" class="button secondary" aria-label="Отдалить график">−</button><button id="chart-zoom-in" type="button" class="button secondary" aria-label="Приблизить график">+</button><button id="chart-live" type="button" class="button secondary" aria-pressed="true">Следить</button></div>
+        </div>
+        <div class="chart-wrap"><svg id="price-chart" viewBox="0 0 800 300" preserveAspectRatio="none" tabindex="0" role="img" aria-label="Цена Bitcoin и сделки. Масштаб: плюс и минус. Прокрутка: стрелки. Весь период: Home." aria-describedby="chart-help"></svg><div id="price-empty" class="chart-empty"><span>↗</span><strong>Здесь появится движение цены</strong><p>Запусти сессию или выбери сохранённую.</p></div></div>
+        <div id="chart-readout" class="chart-readout">Наведи на график, чтобы увидеть время и цену.</div>
+        <input id="chart-scroll" type="range" min="0" max="1000" value="1000" aria-label="Положение видимого периода графика" disabled>
+        <p id="chart-help" class="field-help">Перетаскивай график для просмотра истории. Колесо меняет масштаб; на клавиатуре — + / − и стрелки. «Всё» сбрасывает масштаб, «Следить» возвращает к последним данным.</p>
+        <div class="chart-footer"><span><i class="legend-line"></i> Цена по наблюдениям</span><span><i class="legend-dot buy"></i> Покупка</span><span><i class="legend-dot sell"></i> Продажа</span><span id="chart-caption">—</span></div>
+        <p id="chart-period" class="field-help"></p>
+      </section>
+      <div class="bottom-grid">
+        <section class="panel balance-panel"><div class="section-heading"><h2>Виртуальный баланс</h2><span class="tiny muted">USD</span></div><div class="mini-chart"><svg id="equity-chart" viewBox="0 0 500 180" role="img" aria-label="Изменение стоимости виртуального портфеля"></svg><p id="equity-empty" class="chart-empty">Недостаточно наблюдений</p></div></section>
+        <section class="panel position-panel"><div class="section-heading"><h2>Текущая позиция</h2><span id="position-badge" class="tag">Нет позиции</span></div><dl><div><dt>Количество BTC</dt><dd id="quantity">—</dd></div><div><dt>Цена входа</dt><dd id="entry">—</dd></div><div><dt>Защитный уровень</dt><dd id="stop-price">—</dd></div><div><dt>Нереализованный результат</dt><dd id="unrealized">—</dd></div></dl><p id="broker-order" class="field-help" hidden></p><p class="field-help">Пауза запрещает новые входы. Защита и завершение по времени продолжают работать.</p></section>
+      </div>
+      <section class="panel log-panel" id="log-section"><div class="section-heading"><h2>Действия и решения <span id="event-count" class="count">0</span></h2><label class="inline-filter"><span>Показать</span><select id="log-filter"><option value="important">Сделки и состояние</option><option value="blockers">Блокировки входа и выхода</option><option value="all">Все события</option></select></label></div>
+        <label class="sr-only" for="log-search">Поиск в недавних событиях</label><input id="log-search" type="search" placeholder="Поиск по действию, причине, ID или деталям" autocomplete="off">
+        <div class="table-scroll"><table><thead><tr><th>Время</th><th>Действие</th><th>Кто заблокировал</th><th>Причина / детали</th><th class="numeric">Результат</th></tr></thead><tbody id="events"><tr><td colspan="5" class="empty-row">Каждое действие будет записано здесь.</td></tr></tbody></table></div>
+        <div class="log-pagination"><button id="log-prev" type="button" class="button secondary" disabled>← Новее</button><span id="log-page" class="field-help" aria-live="polite"></span><button id="log-next" type="button" class="button secondary" disabled>Старее →</button></div>
+        <p id="log-scope" class="field-help">Поиск по недавним событиям. Полный журнал — в скачиваемом отчёте.</p>
+      </section>
+      <footer>Локальная панель · Виртуальные сделки <span>Данные и результат обновляются автоматически.</span></footer>
+    </div>
+  </div>
+</main>
+<dialog id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description">
+  <form method="dialog"><h2 id="delete-title">Удалить историю сессии?</h2><p id="delete-description" class="field-help"></p><p class="field-help">Будут удалены события, график и результаты сравнений из локальной базы. Отменить удаление нельзя. Скачай отчёт, если он нужен.</p><div class="dialog-actions"><button class="button secondary" value="cancel" autofocus>Оставить</button><button id="delete-confirm" class="button danger" value="delete">Удалить навсегда</button></div></form>
+</dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+</body></html>

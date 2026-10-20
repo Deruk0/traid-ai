@@ -1,0 +1,10 @@
+# Prepared for this project. Enable after Paper Only eligibility and keys are confirmed.
+[mcp_servers.alpaca_paper]
+command = 'C:\Python314\python.exe'
+args = ['C:\Users\admin\Documents\Vibe Code Projects\traid ai\scripts\start_alpaca_mcp.py']
+cwd = 'C:\Users\admin\Documents\Vibe Code Projects\traid ai'
+env_vars = ["ALPACA_API_KEY", "ALPACA_SECRET_KEY"]
+enabled = false
+enabled_tools = ["get_crypto_bars", "get_crypto_quotes", "get_crypto_trades", "get_crypto_latest_bar", "get_crypto_latest_quote", "get_crypto_latest_trade", "get_crypto_snapshot", "get_crypto_latest_orderbook"]
+startup_timeout_sec = 30
+tool_timeout_sec = 45

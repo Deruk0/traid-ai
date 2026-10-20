@@ -1,0 +1,9 @@
+[project]
+name = "traid-ai"
+version = "0.8.0"
+description = "Local cryptocurrency paper simulator; no real trading"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

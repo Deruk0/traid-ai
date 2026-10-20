@@ -1,0 +1,7 @@
+.health-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0; }
+.health-card { border:1px solid var(--line); border-radius:8px; padding:13px; min-width:0; }
+.health-card > span { display:block; font-size:11px; color:var(--muted); margin-bottom:8px; }
+.health-card > strong { display:block; font-size:14px; }
+.health-card > p { font-size:11px; color:var(--muted); line-height:1.65; margin:8px 0 0; overflow-wrap:anywhere; }
+#health-blockers { line-height:1.8; }
+@media(max-width:760px) { .health-grid { grid-template-columns:1fr; } }

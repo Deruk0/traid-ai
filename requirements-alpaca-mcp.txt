@@ -1,0 +1,2 @@
+# Optional isolated MCP runtime; the dashboard itself needs no dependencies.
+alpaca-mcp-server==2.4.0
